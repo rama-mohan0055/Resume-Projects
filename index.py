@@ -2,6 +2,9 @@ import streamlit as st
 import yfinance as yf
 import matplotlib.pyplot as plt
 import pandas as pd
+import plotly.express as px
+import streamlit as st
+import datetime
 
 df=pd.read_csv("filtered_nifty_50.csv")
 
@@ -21,22 +24,25 @@ if download:
     df = stock.history(period="1mo")
     df = df.reset_index()
     st.header(stockname)
+
     df.drop(["Dividends","Stock Splits"],axis=1,inplace=True)
     st.write(df.tail())
     st.write(df.columns)
     col1, col2 = st.columns([1,1])
+
     with col1:
+        
+        d = st.date_input("Date Wise")
+        st.write("Date Wise:", d)
         st.line_chart(df, x="Date", y="Close",color="#ff00f0")
         st.area_chart(df,x="Date", y="Volume",color="#ff00ff")
-        st.bar_chart(df, x="Date", y="Close",color="#00ff00")
-
         st.divider()
     with col2:
         st.bar_chart(df, x="Date", y="Volume")
         st.scatter_chart(df, x="Date",y="High",color=["#FF0000"])
-        fig, ax = plt.subplots(figsize=(10,5))
-        ax.hist(df["Volume"])
-        st.pyplot(fig)
+        fig = px.bar(df, x='Date', y='Volume')
+        st.plotly_chart(fig)       
+        
 
 
 
