@@ -12,7 +12,7 @@ st.set_page_config("Ram Mohan", layout="wide")
 st.title("stock market")
 
 st.sidebar.title("Navigation")
-selected_option = st.sidebar.radio("Select an option:", ["Summary", "News", "Chart"])
+selected_option = st.sidebar.radio("Select an option:", ["Summary", "News","Profile", "Analysis", "Chart"])
 
 stocknames=df['NAME OF COMPANY'].to_list()
 col1,col2=st.columns([2,2])
@@ -26,8 +26,21 @@ stock = yf.Ticker(symbol)
 
 if selected_option=="Summary":
     st.header("Summary")
+    st.write(stock.info.get('longBusinessSummary'))
+    st.divider()
+    with st.expander("Overview"):
+        col1, col2 = st.columns(2)
+        with col1:
+            st.subheader(f"Employee count is \n{stock.info.get('fullTimeEmployees')}")
+            st.subheader(stock.info.get('sector'))
+        with col2:
+            st.write("Fiscal Year Ends")
+            st.subheader("March 31")
+            st.subheader(stock.info.get('industry'))
+        st.write(stock.info.get("website"))
     st.write(stock.info['address1'])
     st.write(stock.info['city'])
+    st.write(stock.info['country'])
 
 elif selected_option=="News":
     st.header("News")
@@ -41,12 +54,21 @@ elif selected_option=="News":
         title = data['title']
         st.subheader(title)
         with st.expander("See explanation"):
-            st.write(data["summary"]
-            )
+            st.write(data["summary"])
+elif selected_option=="Profile":
+    df = pd.DataFrame(stock.info.get('companyOfficers'))
+    #st.dataframe(df)
+    st.dataframe(df[['name', 'title']], width=1080)
+                
+elif selected_option=="Analysis":
+    st.header("Analysis")
+    st.write(stock.analyst_price_targets)
+    
+
 
 
 else:
-    st.header("charts")   
+    st.header("charts")
     
     if download:
        
