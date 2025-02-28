@@ -1,43 +1,32 @@
 import yfinance as yf
 import pandas as pd
 import streamlit as st
+import plotly.express as px
 import matplotlib.pyplot as plt
 
+st.set_page_config(layout="wide")
 # Step 1: Fetch Indian Stock Names
-stocks = {
-    'RELIANCE': 'RELIANCE.NS',
-    'TCS': 'TCS.NS',
-    'INFY': 'INFY.NS',
-    'HDFCBANK': 'HDFCBANK.NS',
-    'ICICIBANK': 'ICICIBANK.NS'
-}
+ticker = yf.Ticker('TCS.NS')
 
-# Convert to DataFrame and save to CSV
-stocks_df = pd.DataFrame(list(stocks.items()), columns=['Stock Name', 'Ticker'])
-stocks_df.to_csv('indian_stocks.csv', index=False)
+incomestmt = ticker.income_stmt
 
-# Step 2: Streamlit App
-st.title('Indian Stocks Selector')
+dates = list(incomestmt.columns)
 
-# Load the CSV file
-stock_data = pd.read_csv('indian_stocks.csv')
+formatted_dates = pd.to_datetime(dates).strftime('%Y')
 
-# Selectbox for stock names
-selected_stock = st.selectbox('Select a Stock:', stock_data['Stock Name'])
+st.write(formatted_dates)
 
-# Display selected stock ticker
-ticker = stock_data[stock_data['Stock Name'] == selected_stock]['Ticker'].values[0]
-st.write(f'Selected Stock Ticker: {ticker}')
+incomestmt = incomestmt.T
 
-# Step 3: Fetch Open Prices for the Last Month
-stock_info = yf.Ticker(ticker)
-history = stock_info.history(period='1mo')
+incomestmt["Dates"] = formatted_dates
 
-# Store Open prices in a dictionary
-open_prices = history['Open'].to_dict()
+st.write(incomestmt)
 
-# Display dictionary
-st.write('Open Prices for the Last Month:', open_prices)
+total_rev, net_income = st.columns(2)
 
-# Step 4: Plot Line Graph
-st.line_chart(history['Open'])
+with total_rev:
+    bar_chart = px.bar(incomestmt, x=formatted_dates, y="Total Revenue",
+                title="Total Revenue",
+                text_auto=True)
+
+    st.plotly_chart(bar_chart, theme="streamlit")
